@@ -1,0 +1,14 @@
+{
+    admin off
+}
+
+:{$PORT:80} {
+    file_server browse
+    root * .
+    
+    # Enable CORS if needed for external assets
+    header Access-Control-Allow-Origin "*"
+    
+    # Handle SPA routing if needed (fallback to index.html)
+    try_files {path} /index.html
+}
