@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamepad Mapping & Testing Area (Fixed)</title>
+    <style>
+        :root {
+            --bg-dark: #1a1a1a;
+            --card-bg: #2a2a2a;
+            --p1-color: #00a8ff;
+            --p2-color: #e84118;
+            --p3-color: #4cd137;
+            --text-main: #eeeeee;
+            --accent: #fbc531;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: var(--accent);
+            text-align: center;
+        }
+
+        /* Overlay Start */
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+
+        #start-btn {
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #000;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Canvas Area */
+        .canvas-container {
+            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: #2b2b2b;
+            display: block;
+        }
+
+        /* Config Grid */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .p-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            border-top: 5px solid #555;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Warna Border Per Player */
+        #p1-card {
+            border-color: var(--p1-color);
+        }
+
+        #p2-card {
+            border-color: var(--p2-color);
+        }
+
+        #p3-card {
+            border-color: var(--p3-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .gp-select {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .status-text {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #555;
+        }
+
+        .indicator.active {
+            background: #4cd137;
+            box-shadow: 0 0 8px #4cd137;
+        }
+
+        /* Tabel Mapping */
+        .mapping-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .map-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .map-label {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .map-btn {
+            background: #222;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            min-width: 100px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .map-btn:hover {
+            background: #444;
+            color: white;
+        }
+
+        /* State: Waiting for Input */
+        .map-btn.waiting {
+            background: var(--accent);
+            color: #000;
+            animation: pulse 1s infinite;
+            font-weight: bold;
+        }
+
+        .map-btn.bound {
+            color: #4cd137;
+            border-color: #4cd137;
+        }
+
+        .map-btn.unbound {
+            color: #e84118;
+            border-style: dashed;
+        }
+
+        /* Glow Effect ketika dipencet saat Gameplay */
+        .map-btn.active-glow {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 0 10px #fff;
+            transform: scale(1.05);
+            font-weight: bold;
+            border-color: #fff;
+        }
+
+        /* Log Area */
+        .log-area {
+            margin-top: auto;
+            background: #111;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.85em;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #333;
+            color: #ccc;
+        }
+
+        /* Raw Input Debug (Visualisasi Tombol Mentah) */
+        .debug-panel {
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 20px;
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .debug-panel h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        .gp-visualizer {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .gp-visual {
+            min-width: 150px;
+            background: #111;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .gp-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            margin-top: 5px;
+        }
+
+        .btn-box {
+            aspect-ratio: 1;
+            background: #333;
+            border-radius: 2px;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+        }
+
+        .btn-box.pressed {
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Overlay Wajib agar Browser mengizinkan akses Gamepad -->
+    <div id="start-overlay">
+        <h1 style="color: white; margin-bottom: 20px;">🎮 Gamepad Configurator</h1>
+        <p style="color: #ccc; margin-bottom: 30px;">Klik tombol di bawah untuk mengaktifkan Gamepad API Browser</p>
+        <button id="start-btn">MULIJKAN APLIKASI</button>
+    </div>
+
+    <h1>Setting & Test Area (3 Players)</h1>
+
+    <div class="canvas-container">
+        <canvas id="gameCanvas" width="900" height="300"></canvas>
+    </div>
+
+    <div class="config-grid" id="config-grid">
+        <!-- Kartu Player akan di-generate JavaScript -->
+    </div>
+
+    <!-- Panel Debug untuk melihat input mentah -->
+    <div class="debug-panel">
+        <h3>Raw Input Detection (Cek apakah browser membaca controller Anda)</h3>
+        <div class="gp-visualizer" id="gp-visualizer">
+            <div style="color: #777;">Menunggu koneksi controller...</div>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI UTAMA ---
+        const DEADZONE = 0.15;
+        const ANALOG_THRESHOLD = 0.5; // Batas deteksi saat mapping
+
+        // Definisi aksi yang ingin di-mapping
+        const actionConfigs = [
+            { id: 'moveX', label: 'Analog X (Kiri/Kanan)', isAnalog: true },
+            { id: 'moveY', label: 'Analog Y (Atas/Bawah)', isAnalog: true },
+            { id: 'btnA', label: 'Tombol A (Menanam)' },
+            { id: 'btnB', label: 'Tombol B (Memukul)' },
+            { id: 'btnX', label: 'Tombol X (Siram)' },
+            { id: 'btnY', label: 'Tombol Y (Inv)' },
+            { id: 'dpadL', label: 'D-Pad Kiri' },
+            { id: 'dpadR', label: 'D-Pad Kanan' },
+            { id: 'trigL', label: 'Trigger L / L2' },
+            { id: 'trigR', label: 'Trigger R / R2' }
+        ];
+
+        // State Aplikasi
+        const appState = {
+            active: false, // Menjadi true setelah klik Start
+            listening: {
+                active: false,
+                playerId: null,
+                actionId: null
+            }
+        };
+
+        // Status standar Xbox Controller untuk browser (Standar HTML5 Gamepad API)
+        const xboxDefault = {
+            moveX: { type: 'axis', index: 0 },
+            moveY: { type: 'axis', index: 1 },
+            btnA: { type: 'button', index: 0 },
+            btnB: { type: 'button', index: 1 },
+            btnX: { type: 'button', index: 2 },
+            btnY: { type: 'button', index: 3 },
+            dpadL: { type: 'button', index: 14 },
+            dpadR: { type: 'button', index: 15 },
+            trigL: { type: 'button', index: 6 },
+            trigR: { type: 'button', index: 7 }
+        };
+
+        // Data Player
+        const players = [
+            { id: 1, color: '#00a8ff', x: 150, y: 150, mapping: {}, gpIndex: null },
+            { id: 2, color: '#e84118', x: 450, y: 150, mapping: {}, gpIndex: null },
+            { id: 3, color: '#4cd137', x: 750, y: 150, mapping: {}, gpIndex: null }
+        ];
+
+        // --- INISIALISASI ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Load mapping dari localStorage jika ada, atau set default
+        function initMappings() {
+            players.forEach(p => {
+                const saved = localStorage.getItem(`gp_map_p${p.id}`);
+                if (saved) {
+                    p.mapping = JSON.parse(saved);
+                } else {
+                    // Beri default Xbox Layout
+                    p.mapping = JSON.parse(JSON.stringify(xboxDefault));
+                }
+            });
+        }
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            appState.active = true;
+            document.getElementById('start-overlay').style.display = 'none';
+            initMappings();
+            createUI();
+            requestAnimationFrame(gameLoop);
+        });
+
+        // --- SISTEM UI ---
+        function createUI() {
+            const grid = document.getElementById('config-grid');
+            grid.innerHTML = '';
+
+            players.forEach(p => {
+                let html = `
+                    <div class="p-card" id="p${p.id}-card">
+                        <div class="card-header">
+                            <h2 style="color:${p.color}">PLAYER ${p.id}</h2>
+                            <select class="gp-select" id="gp-select-p${p.id}" onchange="assignController(${p.id}, this.value)">
+                                <option value="-1">-- Pilih Controller --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="status-text">
+                            <div class="indicator ${p.gpIndex !== null ? 'active' : ''}"></div>
+                            <span id="status-p${p.id}">
+                                ${p.gpIndex !== null ? `Terhubung ke Gamepad ${p.gpIndex}` : 'Tidak ada controller'}
+                            </span>
+                        </div>
+
+                        <div class="mapping-list">
+                `;
+
+                actionConfigs.forEach(ac => {
+                    const mapData = p.mapping[ac.id];
+                    const isBound = !!mapData;
+                    let label = "Isi...";
+
+                    if (isBound) {
+                        if (mapData.type === 'button') label = `Btn ${mapData.index}`;
+                        else if (mapData.type === 'axis') label = `Axis ${mapData.index}`;
+                    }
+
+                    html += `
+                        <div class="map-row">
+                            <span class="map-label">${ac.label}</span>
+                            <button class="map-btn ${isBound ? 'bound' : 'unbound'}" 
+                                id="btn-p${p.id}-${ac.id}"
+                                onclick="startMapping(${p.id}, '${ac.id}')">
+                                ${label}
+                            </button>
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+                        <div class="log-area" id="log-p${p.id}">Siap untuk mapping</div>
+                    </div>
+                `;
+                grid.innerHTML += html;
+            });
+        }
+
+        window.assignController = function (playerId, val) {
+            const p = players.find(x => x.id === playerId);
+            const idx = parseInt(val);
+
+            if (idx >= 0) {
+                p.gpIndex = idx;
+                document.getElementById(`status-p${p.id}`).innerText = `Terhubung ke Gamepad ${idx}`;
+                document.querySelector(`#p${p.id}-card .indicator`).classList.add('active');
+            } else {
+                p.gpIndex = null;
+                document.getElementById(`status-p${p.id}`).innerText = 'Tidak ada controller';
+                document.querySelector(`#p${p.id}-card .indicator`).classList.remove('active');
+            }
+        };
+
+        window.startMapping = function (playerId, actionId) {
+            // Hapus state waiting yang lama
+            document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('waiting'));
+
+            // Sedikit delay agar tombol enter/klik mouse untuk memencet tombol "TEKAN..."
+            // tidak terbaca sebagai input gamepad jika overlap.
+            setTimeout(() => {
+                appState.listening = {
+                    active: true,
+                    playerId: playerId,
+                    actionId: actionId
+                };
+
+                const btn = document.getElementById(`btn-p${playerId}-${actionId}`);
+                if (btn) {
+                    btn.innerText = "TEKAN...";
+                    btn.classList.add('waiting');
+                }
+
+                setLog(playerId, `Silakan tekan tombol/geser stick pada controller Player ${playerId}...`, "#fbc531");
+            }, 100);
+        };
+
+        function setLog(pid, text, color) {
+            const el = document.getElementById(`log-p${pid}`);
+            if (el) {
+                el.innerText = text;
+                el.style.color = color || '#ccc';
+            }
+        }
+
+        // --- SISTEM INPUT & LOGIC ---
+
+        function getConnectedGamepads() {
+            return Array.from(navigator.getGamepads()).filter(gp => gp !== null);
+        }
+
+        // State untuk melacak jumlah gamepad sebelumnya agar dropdown tidak di-render setiap frame
+        let lastGamepadCount = -1;
+
+        // Fungsi Utama: Membaca Input
+        function gameLoop() {
+            const gamepads = navigator.getGamepads();
+            const gpList = getConnectedGamepads();
+
+            // Update dropdown secara dinamis jika ada controller baru dicolok/dicabut
+            if (gpList.length !== lastGamepadCount) {
+                updateGamepadDropdowns(gpList);
+                lastGamepadCount = gpList.length;
+            }
+
+            // 1. Update Visualisasi Raw Input (Debug)
+            updateDebugVisualizer(gpList);
+
+            // 2. Handle Mapping (Jika sedang mode setup)
+            if (appState.listening.active) {
+                handleMappingLogic(gpList);
+            }
+
+            // 3. Handle Gameplay (Update Canvas)
+            updateGameLogic(gamepads);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function handleMappingLogic(gpList) {
+            const p = players.find(x => x.id === appState.listening.playerId);
+            // Pastikan player punya controller yang dipilih
+            if (p.gpIndex === null) {
+                setLog(p.id, "ERROR: Pilih controller dulu di dropdown atas!", "#e84118");
+                appState.listening.active = false;
+                createUI(); // Reset UI
+                return;
+            }
+
+            const gp = gpList.find(g => g.index === p.gpIndex);
+            if (!gp) return;
+
+            const config = actionConfigs.find(c => c.id === appState.listening.actionId);
+            if (!config) return;
+
+            // 1. Cek Tombol (Button)
+            // Hanya izinkan mapping ke tombol jika aksi tersebut HARAPANNYA BUKAN analog murni (seperti moveX/moveY).
+            // Tapi untuk fleksibilitas, kita izinkan semuanya bisa button / bisa axis.
+            for (let i = 0; i < gp.buttons.length; i++) {
+                if (gp.buttons[i].pressed) {
+                    p.mapping[appState.listening.actionId] = { type: 'button', index: i };
+                    finishMapping(p);
+                    return;
+                }
+            }
+
+            // 2. Cek Sumbu (Axis / Stick / Trigger)
+            // Banyak controller bermasalah dengan drift (analog tidak benar-benar 0), jadi kita pakai threshold besar
+            const MAPPING_AXIS_THRESHOLD = 0.6;
+
+            for (let i = 0; i < gp.axes.length; i++) {
+                const val = gp.axes[i];
+                if (Math.abs(val) > MAPPING_AXIS_THRESHOLD) {
+                    p.mapping[appState.listening.actionId] = { type: 'axis', index: i };
+                    finishMapping(p);
+                    return;
+                }
+            }
+        }
+
+        function finishMapping(player) {
+            // Simpan ke local storage
+            localStorage.setItem(`gp_map_p${player.id}`, JSON.stringify(player.mapping));
+
+            setLog(player.id, "Berhasil di-bind!", "#4cd137");
+            appState.listening.active = false;
+            createUI(); // Re-render UI untuk update label tombol
+        }
+
+        function updateGamepadDropdowns(gpList) {
+            players.forEach(p => {
+                const selectEl = document.getElementById(`gp-select-p${p.id}`);
+                if (!selectEl) return;
+
+                // Simpan pilihan saat ini (jika ada)
+                const currentVal = selectEl.value;
+
+                let html = `<option value="-1">-- Pilih Controller --</option>`;
+                gpList.forEach(gp => {
+                    // Gunakan gp.index asli dari browser, bukan index array hasil filter
+                    html += `<option value="${gp.index}">Gamepad ${gp.index} (${gp.id})</option>`;
+                });
+
+                selectEl.innerHTML = html;
+                selectEl.value = currentVal; // Kembalikan nilai yang dipilih sebelumnya jika masih valid
+            });
+        }
+
+        function updateGameLogic(gamepads) {
+            // Bersihkan Canvas
+            ctx.fillStyle = '#2b2b2b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Gambar Grid Arena
+            drawGrid();
+
+            players.forEach(p => {
+                if (p.gpIndex === null) {
+                    // Gambar abu-abu jika tidak nyambung
+                    drawPlayer(p, false);
+                    return;
+                }
+
+                const gp = gamepads[p.gpIndex];
+                if (!gp) return;
+
+                let dx = 0;
+                let dy = 0;
+                let scale = 1.0;
+                let action = null;
+
+                // --- BACA MAPPING ---
+
+                // 1. Analog Movement
+                const mapX = p.mapping['moveX'];
+                const mapY = p.mapping['moveY'];
+
+                if (mapX) {
+                    if (mapX.type === 'axis') dx = gp.axes[mapX.index];
+                }
+                if (mapY) {
+                    if (mapY.type === 'axis') dy = gp.axes[mapY.index];
+                }
+
+                // Deadzone
+                if (Math.abs(dx) < DEADZONE) dx = 0;
+                if (Math.abs(dy) < DEADZONE) dy = 0;
+
+                // Hitung Arah Pandang (Mata)
+                if (Math.abs(dx) > 0 || Math.abs(dy) > 0) {
+                    p.facingAngles = Math.atan2(dy, dx);
+                }
+
+                // Update Posisi
+                p.x += dx * 5;
+                p.y += dy * 5;
+
+                // Batas Layar
+                p.x = Math.max(20, Math.min(canvas.width - 20, p.x));
+                p.y = Math.max(20, Math.min(canvas.height - 20, p.y));
+
+                // 3. Tombol Aksi & Update Warna UI
+                actionConfigs.forEach(ac => {
+                    const mapData = p.mapping[ac.id];
+                    let pressed = false;
+
+                    if (mapData) {
+                        if (mapData.type === 'button' && gp.buttons[mapData.index]) {
+                            pressed = gp.buttons[mapData.index].pressed;
+                        } else if (mapData.type === 'axis' && Math.abs(gp.axes[mapData.index]) > 0.5) {
+                            pressed = true;
+                        }
+                    }
+
+                    // Terapkan ke karakter canvas
+                    if (ac.id === 'btnA' && pressed) action = 'plant';
+                    if (ac.id === 'trigL' && pressed) scale = 0.7;
+                    if (ac.id === 'trigR' && pressed) scale = 1.3;
+
+                    // Nyalakan tombol UI (map-btn) di kartu Player
+                    const btnEl = document.getElementById(`btn-p${p.id}-${ac.id}`);
+                    if (btnEl && !btnEl.classList.contains('waiting')) {
+                        if (pressed) btnEl.classList.add('active-glow');
+                        else btnEl.classList.remove('active-glow');
+                    }
+                });
+
+                drawPlayer(p, true, scale, action);
+            });
+        }
+
+        // --- FUNGSI GAMBAR ---
+        function drawGrid() {
+            ctx.strokeStyle = '#3a3a3a';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let x = 0; x < canvas.width; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
+            for (let y = 0; y < canvas.height; y += 50) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
+            ctx.stroke();
+        }
+
+        function drawPlayer(p, isConnected, scale = 1, action = null) {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.scale(scale, scale);
+
+            // Glow effect
+            if (isConnected) {
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 15;
+            }
+
+            // Badan Player
+            ctx.fillStyle = isConnected ? p.color : '#555';
+            if (action === 'plant') ctx.fillStyle = '#fff'; // Flash putih jika tekan A
+
+            // Gambar bentuk kotak rounded sederhana
+            const s = 30;
+            ctx.fillRect(-s / 2, -s / 2, s, s);
+
+            // Wajah / Arah
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`P${p.id}`, 0, 0);
+
+            // Jika ada info menghadap
+            if (p.facingAngles !== undefined) {
+                let eyeDist = s * 0.35;
+                let eyeOffsetX = Math.cos(p.facingAngles) * eyeDist;
+                let eyeOffsetY = Math.sin(p.facingAngles) * eyeDist;
+
+                let perpX = -Math.sin(p.facingAngles) * 4;
+                let perpY = Math.cos(p.facingAngles) * 4;
+
+                // Mata Kanan
+                ctx.fillRect(eyeOffsetX + perpX - 2, eyeOffsetY + perpY - 2, 4, 4);
+                // Mata Kiri
+                ctx.fillRect(eyeOffsetX - perpX - 2, eyeOffsetY - perpY - 2, 4, 4);
+            }
+
+            // Label nama controller di bawah
+            if (isConnected) {
+                ctx.fillStyle = '#ccc';
+                ctx.font = '10px Arial';
+                ctx.shadowBlur = 0;
+                ctx.fillText(`GP ${p.gpIndex}`, 0, 25);
+            }
+
+            ctx.restore();
+        }
+
+        // Label Tombol Xbox Baku
+        const xboxLabels = [
+            "A", "B", "X", "Y", "LB", "RB", "LT", "RT",
+            "Select", "Start", "L3", "R3",
+            "Up", "Down", "Left", "Right", "Home"
+        ];
+
+        // --- DEBUG VISUALIZER ---
+        function updateDebugVisualizer(gpList) {
+            const container = document.getElementById('gp-visualizer');
+
+            // Jika jumlah gamepad berubah, rebuild html 
+            if (container.childElementCount !== gpList.length) {
+                container.innerHTML = '';
+                gpList.forEach((gp, i) => {
+                    let html = `<div class="gp-visual">
+                        <strong>Gamepad ${i}</strong>
+                        <div style="font-size: 0.8em; color: #888; margin-bottom: 5px;">${gp.id}</div>
+                        <div class="gp-buttons">`;
+
+                    // Tampilkan max 17 tombol pertama
+                    for (let b = 0; b < Math.min(gp.buttons.length, 17); b++) {
+                        let label = xboxLabels[b] || `${b}`;
+                        html += `<div class="btn-box" id="debug-gp${i}-btn${b}" title="Tombol ${b}">${label}</div>`;
+                    }
+                    html += `</div></div>`;
+                    container.innerHTML += html;
+                });
+            }
+
+            // Update warna tombol tiap frame (menyala jika ditekan)
+            gpList.forEach((gp, i) => {
+                gp.buttons.forEach((btn, b) => {
+                    const el = document.getElementById(`debug-gp${i}-btn${b}`);
+                    if (el) {
+                        if (btn.pressed) {
+                            el.classList.add('pressed');
+                        } else {
+                            el.classList.remove('pressed');
+                        }
+                    }
+                });
+            });
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,311 @@
+{
+  "main_menu": {
+    "groupLevelEndAtIndex": 8,
+    "hide_player": true,
+    "spawn": [
+      15,
+      9
+    ],
+    "entities": [
+      {
+        "x": 20,
+        "y": 17,
+        "name": "black_cow",
+        "type": "cow"
+      },
+      {
+        "x": 10,
+        "y": 5,
+        "name": "white_chicken",
+        "type": "chicken"
+      },
+      {
+        "x": 11,
+        "y": 7,
+        "name": "brown_chicken",
+        "type": "chicken"
+      },
+      {
+        "x": 11,
+        "y": 17,
+        "name": "black_goat",
+        "type": "goat"
+      },
+      {
+        "x": 8,
+        "y": 14,
+        "name": "pink_pig",
+        "type": "pig"
+      },
+      {
+        "x": 25,
+        "y": 2,
+        "name": "fluffy_white_sheep_sheet",
+        "type": "sheep"
+      }
+    ]
+  },
+  "town": {
+    "morning_music": "OST 1 - Good Morning.ogg",
+    "night_music": "OST 3 - Village.ogg",
+    "groupLevelEndAtIndex": 6,
+    "triggers": [
+      {
+        "x": 43,
+        "y": 83,
+        "width": 4,
+        "height": 1,
+        "destinationLevel": "farm",
+        "destinationX": 48,
+        "destinationY": 39,
+        "type": "teleportation"
+      },
+      {
+        "x": 37,
+        "y": 39,
+        "width": 1,
+        "height": 1,
+        "destinationLevel": "crop_shop",
+        "destinationX": 21.5,
+        "destinationY": 20.5,
+        "type": "teleportation"
+      },
+      {
+        "x": 33,
+        "y": 39,
+        "width": 1,
+        "height": 1,
+        "destinationLevel": "animal_shop",
+        "destinationX": 16.5,
+        "destinationY": 21.5,
+        "type": "teleportation"
+      },
+      {
+        "x": 29,
+        "y": 39,
+        "width": 1,
+        "height": 1,
+        "destinationLevel": "bar",
+        "destinationX": 19.5,
+        "destinationY": 25.9,
+        "type": "teleportation"
+      }
+    ]
+  },
+  "farm": {
+    "morning_music": "OST 5 - Seaside Promenade (Loopable).ogg",
+    "night_music": "OST 2 - Fate.ogg",
+    "groupLevelEndAtIndex": 8,
+    "spawn": [
+      15,
+      40
+    ],
+    "triggers": [
+      {
+        "x": 14.5,
+        "y": 38,
+        "width": 1,
+        "height": 1,
+        "destinationLevel": "bedroom",
+        "destinationX": 24.5,
+        "destinationY": 25.9,
+        "type": "teleportation"
+      },
+      {
+        "x": 49,
+        "y": 37,
+        "width": 1,
+        "height": 3,
+        "destinationLevel": "town",
+        "destinationX": 45,
+        "destinationY": 82,
+        "type": "teleportation"
+      }
+    ],
+    "entities": [
+      {
+        "x": 26,
+        "y": 37,
+        "width": 2,
+        "height": 2,
+        "name": "TradingBox",
+        "type": "chest"
+      }
+    ],
+    "light_sources": [
+      [
+        15,
+        35.95,
+        1
+      ],
+      [
+        13.95,
+        37.7,
+        0.75
+      ],
+      [
+        16.1,
+        37.7,
+        0.75
+      ]
+    ]
+  },
+  "bedroom": {
+    "interior": true,
+    "morning_music": "OST 5 - Seaside Promenade (Loopable).ogg",
+    "night_music": "OST 2 - Fate.ogg",
+    "groupLevelEndAtIndex": 6,
+    "triggers": [
+      {
+        "x": 24,
+        "y": 26,
+        "width": 1,
+        "height": 1,
+        "destinationLevel": "farm",
+        "destinationX": 15,
+        "destinationY": 40,
+        "type": "teleportation"
+      },
+      {
+        "x": 46.5,
+        "y": 20.5,
+        "width": 3,
+        "height": 3,
+        "type": "bed"
+      }
+    ]
+  },
+  "crop_shop": {
+    "interior": true,
+    "morning_music": "OST 1 - Good Morning.ogg",
+    "night_music": "OST 3 - Village.ogg",
+    "triggers": [
+      {
+        "x": 21,
+        "y": 21,
+        "width": 1,
+        "height": 1,
+        "destinationLevel": "town",
+        "destinationX": 37.5,
+        "destinationY": 40.5,
+        "type": "teleportation"
+      }
+    ],
+    "entities": [
+      {
+        "x": 22,
+        "y": 12,
+        "name": "Amely",
+        "type": "npc"
+      }
+    ]
+  },
+  "animal_shop": {
+    "interior": true,
+    "morning_music": "OST 1 - Good Morning.ogg",
+    "night_music": "OST 3 - Village.ogg",
+    "triggers": [
+      {
+        "x": 16,
+        "y": 22,
+        "width": 1,
+        "height": 1,
+        "destinationLevel": "town",
+        "destinationX": 33.5,
+        "destinationY": 40.5,
+        "type": "teleportation"
+      }
+    ],
+    "entities": [
+      {
+        "x": 9,
+        "y": 13,
+        "name": "Mark",
+        "type": "npc"
+      },
+      {
+        "x": 19,
+        "y": 14,
+        "name": "pink_pig",
+        "type": "pig"
+      },
+      {
+        "x": 19,
+        "y": 15,
+        "name": "spotted_pig",
+        "type": "pig"
+      },
+      {
+        "x": 23,
+        "y": 16,
+        "name": "black_goat",
+        "type": "goat"
+      },
+      {
+        "x": 26,
+        "y": 13,
+        "name": "strawberry_cow",
+        "type": "cow"
+      },
+      {
+        "x": 28,
+        "y": 14,
+        "name": "brown_and_white_chicken",
+        "type": "chicken"
+      }
+    ]
+  },
+  "bar": {
+    "interior": true,
+    "morning_music": "OST 1 - Good Morning.ogg",
+    "night_music": "OST 3 - Village.ogg",
+    "triggers": [
+      {
+        "x": 19,
+        "y": 26,
+        "width": 1,
+        "height": 1,
+        "destinationLevel": "town",
+        "destinationX": 29.5,
+        "destinationY": 41,
+        "type": "teleportation"
+      },
+      {
+        "x": 10,
+        "y": 15,
+        "width": 3,
+        "height": 3,
+        "type": "dialog",
+        "key": "Bar_TV1_1"
+      },
+      {
+        "x": 29,
+        "y": 15,
+        "width": 3,
+        "height": 3,
+        "type": "dialog",
+        "key": "Bar_TV2_1"
+      }
+    ],
+    "entities": [
+      {
+        "x": 20,
+        "y": 17,
+        "name": "Yu",
+        "type": "npc"
+      },
+      {
+        "x": 10,
+        "y": 21,
+        "name": "Adian",
+        "type": "npc"
+      },
+      {
+        "x": 26.25,
+        "y": 18,
+        "name": "Marx",
+        "type": "npc"
+      }
+    ]
+  }
+}
